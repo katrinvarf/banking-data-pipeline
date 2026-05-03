@@ -21,4 +21,11 @@ WHERE mad."DATA_ACTUAL_DATE" IS NOT NULL
 	AND mad."ACCOUNT_NUMBER" IS NOT NULL
 	AND mad."CHAR_TYPE" IS NOT NULL
 	AND mad."CURRENCY_RK" IS NOT NULL
-	AND mad."CURRENCY_CODE" IS NOT NULL;
+	AND mad."CURRENCY_CODE" IS NOT NULL
+ON CONFLICT (data_actual_date, account_rk)
+DO UPDATE SET
+    data_actual_end_date = EXCLUDED.data_actual_end_date,
+    account_number = EXCLUDED.account_number,
+    char_type = EXCLUDED.char_type,
+    currency_rk = EXCLUDED.currency_rk,
+    currency_code = EXCLUDED.currency_code;

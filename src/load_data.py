@@ -66,6 +66,7 @@ def load_to_stage(conn, table_name):
         return len(df)
 
     except Exception as error:
+        conn.rollback()
         finish_log_failed(conn, log_id, error)
         conn.commit()
         raise
@@ -82,7 +83,8 @@ def load_to_ds(conn, table_name):
 
     try:
         with conn.cursor() as cur:
-            cur.execute(f"TRUNCATE TABLE ds.{table_name};")
+            if table_name == "ft_posting_f":
+                cur.execute(f"TRUNCATE TABLE ds.{table_name};")
 
         rows_inserted = execute_sql_file(conn, f"sql/ds/dml/insert_{table_name}.sql")
 
@@ -92,6 +94,7 @@ def load_to_ds(conn, table_name):
         return rows_inserted
 
     except Exception as error:
+        conn.rollback()
         finish_log_failed(conn, log_id, error)
         conn.commit()
         raise

@@ -26,4 +26,16 @@ SELECT mlas."CHAPTER"::CHAR(1),
     to_date(mlas."END_DATE", 'YYYY-MM-DD')
 FROM stage.md_ledger_account_s mlas
 WHERE mlas."LEDGER_ACCOUNT" IS NOT NULL
-	AND mlas."START_DATE" IS NOT NULL;
+	AND mlas."START_DATE" IS NOT NULL
+ON CONFLICT (ledger_account, start_date)
+DO UPDATE SET
+    chapter = EXCLUDED.chapter,
+    chapter_name = EXCLUDED.chapter_name,
+    section_number = EXCLUDED.section_number,
+    section_name = EXCLUDED.section_name,
+    subsection_name = EXCLUDED.subsection_name,
+    ledger1_account = EXCLUDED.ledger1_account,
+    ledger1_account_name = EXCLUDED.ledger1_account_name,
+    ledger_account_name = EXCLUDED.ledger_account_name,
+    characteristic = EXCLUDED.characteristic,
+    end_date = EXCLUDED.end_date;
