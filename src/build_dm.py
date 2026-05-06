@@ -3,6 +3,7 @@ import os
 import psycopg2
 import pandas as pd
 from dotenv import load_dotenv
+from logging_utils import start_log, finish_log_success, finish_log_failed
 
 
 load_dotenv()
@@ -25,27 +26,46 @@ def load_account_turnover(conn, process_date):
 
 def init_account_balance(conn):
     process_date = "2017-12-31"
-    with conn.cursor() as cur:
-        cur.execute("DELETE FROM dm.dm_account_balance_f WHERE on_date = %s;", (process_date,))
-        cur.execute('''
-            INSERT INTO dm.dm_account_balance_f (
-                on_date,
-                account_rk,
-                balance_out,
-                balance_out_rub
-            )
-            SELECT
-                fbf.on_date,
-                fbf.account_rk,
-                fbf.balance_out,
-                fbf.balance_out * COALESCE(merd.reduced_cource, 1)
-            FROM ds.ft_balance_f fbf
-                LEFT JOIN ds.md_exchange_rate_d merd ON merd.currency_rk = fbf.currency_rk 
-                    AND %s >= merd.data_actual_date 
-                    AND (%s <= merd.data_actual_end_date OR merd.data_actual_end_date IS NULL)
-            WHERE fbf.on_date = %s
-        ''', (process_date, process_date, process_date))
+    log_id = start_log(
+        conn, 
+        process_name="init_account_balance",
+        description=f"Init account balance for date {process_date}"
+    )
     conn.commit()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM dm.dm_account_balance_f WHERE on_date = %s;", (process_date,))
+            cur.execute('''
+                INSERT INTO dm.dm_account_balance_f (
+                    on_date,
+                    account_rk,
+                    balance_out,
+                    balance_out_rub
+                )
+                SELECT
+                    fbf.on_date,
+                    fbf.account_rk,
+                    fbf.balance_out,
+                    fbf.balance_out * COALESCE(merd.reduced_cource, 1)
+                FROM ds.ft_balance_f fbf
+                    LEFT JOIN ds.md_exchange_rate_d merd ON merd.currency_rk = fbf.currency_rk 
+                        AND %s >= merd.data_actual_date 
+                        AND (%s <= merd.data_actual_end_date OR merd.data_actual_end_date IS NULL)
+                WHERE fbf.on_date = %s
+            ''', (process_date, process_date, process_date))
+            rows_inserted = cur.rowcount
+
+        finish_log_success(conn, log_id, rows_processed=rows_inserted)
+        conn.commit()
+
+        print(f"[DM] Initialized balance for {process_date}")
+
+    except Exception as error:
+        conn.rollback()
+        finish_log_failed(conn, log_id, error)
+        conn.commit()
+        raise
 
 
 def load_account_balance(conn, process_date):
