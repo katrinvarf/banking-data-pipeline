@@ -78,3 +78,11 @@ COMMENT ON COLUMN dm.dm_f101_round_f.turn_cre_total IS 'Сумма кредит�
 COMMENT ON COLUMN dm.dm_f101_round_f.balance_out_rub IS 'Сумма исходящего остатка для рублевых счетов';
 COMMENT ON COLUMN dm.dm_f101_round_f.balance_out_val IS 'Сумма исходящего остатка для счетов в валюте и драг. металлах';
 COMMENT ON COLUMN dm.dm_f101_round_f.balance_out_total IS 'Сумма исходящего остатка - итого';
+
+-- =====================
+-- TABLE: dm.dm_f101_round_f_v2
+-- =====================
+
+CREATE TABLE IF NOT EXISTS dm.dm_f101_round_f_v2 (
+	LIKE dm.dm_f101_round_f INCLUDING ALL
+);
