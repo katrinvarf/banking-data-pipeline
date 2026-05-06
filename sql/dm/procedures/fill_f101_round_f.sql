@@ -4,7 +4,20 @@ $$
     DECLARE
         v_from_date DATE := (DATE_TRUNC('month', i_OnDate - INTERVAL '1 month'))::DATE;
         v_to_date DATE := (v_from_date + INTERVAL '1 month' - INTERVAL '1 day')::DATE;
+        v_log_id INTEGER;
+        v_rows_processed INTEGER;
     BEGIN
+        INSERT INTO logs.process_log (
+            process_name, status, start_time, description
+        )
+        VALUES (
+            'fill_f101_round_f',
+            'STARTED',
+            NOW(),
+            'Calculate dm.dm_f101_round_f for date ' || i_OnDate
+        )
+        RETURNING log_id INTO v_log_id;
+
         DELETE FROM dm.dm_f101_round_f
         WHERE from_date = v_from_date AND to_date = v_to_date;
 
@@ -94,5 +107,23 @@ $$
             LEFT JOIN balance_out_calc bal_out USING (ledger_account)
             LEFT JOIN turnover_calc turn USING (ledger_account)
         ORDER BY mlas.ledger_account;
+
+        GET DIAGNOSTICS v_rows_processed = ROW_COUNT;
+
+        UPDATE logs.process_log
+        SET status = 'SUCCESS',
+            end_time = NOW(),
+            rows_processed = v_rows_processed
+        WHERE log_id = v_log_id;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            UPDATE logs.process_log
+            SET status = 'FAILED',
+                end_time = NOW(),
+                error_message = SQLERRM
+            WHERE log_id = v_log_id;
+
+            RAISE;
     END;
 $$;

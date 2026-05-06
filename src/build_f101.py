@@ -28,6 +28,8 @@ def main():
         load_f101(conn, process_date)
         conn.commit()
 
+        print(f"[F101] Report calculated for {process_date}")
+
 
 if __name__ == "__main__":
     main()
