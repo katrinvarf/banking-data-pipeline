@@ -24,6 +24,8 @@ ETL-проект для загрузки банковских данных из 
 │       ├── md_currency_d.csv
 │       ├── md_exchange_rate_d.csv
 │       └── md_ledger_account_s.csv
+├── docs
+│   └── video_links.txt
 ├── README.md
 ├── requirements.txt
 ├── sql
@@ -127,8 +129,13 @@ python src/export_data.py
 - название процесса
 - статус выполнения (STARTED / SUCCESS / FAILED)
 - время начала и окончания
+- описание процесса
 - количество обработанных строк
 - текст ошибки (при наличии)
+
+## Видео демонстрации
+
+Ссылки на видео находятся в файле `docs/video_links.txt`.
 
 ## Примечания
 
