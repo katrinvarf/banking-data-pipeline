@@ -2,6 +2,9 @@
 \i sql/logs/ddl/001_create_schema.sql
 \i sql/logs/ddl/002_create_tables.sql
 
+-- Stage
+\i sql/stage/ddl/001_create_schema.sql
+
 -- DS
 \i sql/ds/ddl/001_create_schema.sql
 \i sql/ds/ddl/002_create_tables.sql
